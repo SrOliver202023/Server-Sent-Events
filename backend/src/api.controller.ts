@@ -1,12 +1,10 @@
 import { Controller, Get, Req } from '@nestjs/common';
 import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
-import { Observable } from 'rxjs';
 import { Request } from 'express';
 
 @Controller()
 export class ApiController {
   private client: ClientProxy;
-
   constructor() {
     this.client = ClientProxyFactory.create({
       transport: Transport.RMQ,
@@ -20,7 +18,6 @@ export class ApiController {
       },
     });
   }
-
   @Get('send-sse')
   async sendSse(@Req() req: Request) {
     this.client?.send({ cmd: 'sse' }, 'Hello from RabbitMQ!').toPromise()
