@@ -1,35 +1,18 @@
-import { Controller, Req, Sse } from '@nestjs/common';
-import { Ctx, EventPattern, MessagePattern, RmqContext } from '@nestjs/microservices';
-import { Request } from 'express'
-import { Observable } from 'rxjs';
+import { Body, Controller, Get, Param, Post, Sse } from '@nestjs/common';
+import { AppService } from './app.service';
+import { Observable, interval, map, pipe } from 'rxjs';
+
 @Controller()
 export class AppController {
+  constructor(private readonly appService: AppService) {}
 
-  @MessagePattern({ cmd: 'greeting' })
-  getGreetingMessage(name: string): string {
-    return `Hello ${name}`;
+  @Post('publish/:idChannel')
+  async publish(@Body() body: object, @Param() param: { idChannel: string }) {
+    return await this.appService.publish(param.idChannel, body)
   }
 
-  @MessagePattern({ cmd: 'greeting-async' })
-  async getGreetingMessageAysnc(name: string): Promise<string> {
-    return `Hello ${name} Async`;
-  }
-
-  @EventPattern('book-created')
-  async handleBookCreatedEvent(data: Record<string, unknown>) {
-    console.log(data);
-  }
-
-  @Sse('sse')
-  sse(@Req() req: Request, @Ctx() context: RmqContext) {
-    return new Observable((observer) => {
-      const intervalId = setInterval(() => {
-        observer.next({ data: `${new Date()}` });
-      }, 1000);
-      req.on('close', () => {
-        clearInterval(intervalId)
-        observer.complete();
-      });
-    })
+  @Sse('sse/:idChannel')
+  async subscribe(@Param() param: { idChannel: string }): Promise<Observable<any>> {
+    return await this.appService.subscribe(param.idChannel)
   }
 }

@@ -1,16 +1,8 @@
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
-    transport: Transport.RMQ,
-    options: {
-      urls: [process.env.RABBITMQ_URL],
-      queue: 'sse',
-      queueOptions: { durable: true },
-    }
-  })
-  await app.listen();
+  const app = await NestFactory.create(AppModule, { cors: true });
+  await app.listen(8000);
 }
 bootstrap();

@@ -1,21 +1,18 @@
 import { Module } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
-
+import { RedisModule } from '@liaoliaots/nestjs-redis';
 @Module({
   imports: [
-    ConfigModule.forRoot(),
-    ClientsModule.register([{
-      name: 'RMQ',
-      transport: Transport.RMQ,
-      options: {
-        urls: [process.env.RABBITMQ_URL],
-        queue: 'sse',
-        queueOptions: { durable: true }
+    ConfigModule.forRoot({ isGlobal: true }),
+    RedisModule.forRoot({
+      config: {
+        host: 'localhost',
+        port: 6379,
+        password: process.env.REDIS_PASSWORD,
       }
-    }])
+    })
   ],
   controllers: [AppController],
   providers: [AppService],
